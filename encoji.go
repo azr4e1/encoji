@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+const Version = "0.1.0"
+
 const (
 	StatusOK int = iota
 	MissingInputError
@@ -165,18 +167,27 @@ func WithEncodeFlag(f bool) option {
 func Main(stdin, stdout, stderr io.ReadWriter) int {
 	flag.Usage = func() {
 		fmt.Fprintf(stderr, "Usage: %s [-encode string | -encodefile filepath | -decode] [stdin]\n", os.Args[0])
-		fmt.Fprintln(stderr, "Encode/decode text using unicode variation selectors")
+		fmt.Fprintln(stderr, "Encode/decode text using unicode variation selectors\n")
 		fmt.Fprintln(stderr, "Flags:")
 		flag.PrintDefaults()
 	}
 	encodeMode := flag.String("encode", "", "smuggle data within provided text")
 	encodeFile := flag.String("encodefile", "", "smuggle data from file within provided text")
 	decodeMode := flag.Bool("decode", false, "decode smuggled data")
+	version := flag.Bool("version", false, "print version")
 	flag.Parse()
 
-	if !(*decodeMode) && *encodeMode == "" && *encodeFile == "" {
+	if !(*decodeMode) && *encodeMode == "" && *encodeFile == "" && !(*version) {
 		flag.Usage()
 		return MissingInputError
+	}
+
+	if *version && flag.NFlag() != 1 {
+		flag.Usage()
+		return MissingInputError
+	} else if *version {
+		fmt.Fprintf(stdout, "%s version %s\n", os.Args[0], Version)
+		return StatusOK
 	}
 
 	var input io.Reader
