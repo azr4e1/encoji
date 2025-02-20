@@ -181,11 +181,12 @@ func Main(stdin, stdout, stderr io.ReadWriter) int {
 		flag.Usage()
 		return MissingInputError
 	}
-
-	if *version && flag.NFlag() != 1 {
+	if flag.NFlag() > 1 {
 		flag.Usage()
-		return MissingInputError
-	} else if *version {
+		return TooManyInputsError
+	}
+
+	if *version {
 		fmt.Fprintf(stdout, "%s version %s\n", os.Args[0], Version)
 		return StatusOK
 	}
