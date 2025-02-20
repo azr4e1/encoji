@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const Version = "0.1.1"
+const Version = "0.1.2"
 
 const (
 	StatusOK int = iota
@@ -114,6 +114,18 @@ func NewSmuggler(opts ...option) (*smuggler, error) {
 	return s, nil
 }
 
+func WithInputFromArgs(args []string) option {
+	return func(s *smuggler) error {
+		if len(args) < 1 {
+			return nil
+		}
+		arg := strings.Join(args, " ")
+		buf := bytes.NewBuffer([]byte(arg))
+		s.stdin = buf
+		return nil
+	}
+}
+
 func WithInput(stdin io.Reader) option {
 	return func(s *smuggler) error {
 		s.stdin = stdin
@@ -191,22 +203,12 @@ func Main(stdin, stdout, stderr io.ReadWriter) int {
 		return StatusOK
 	}
 
-	var input io.Reader
-	if arg := flag.Args(); len(arg) < 1 {
-		input = stdin
-	} else if len(arg) > 1 {
-		flag.Usage()
-		return TooManyInputsError
-	} else {
-		input = bytes.NewBuffer([]byte(arg[0]))
-	}
-
 	var encodeOption = WithClearText(*encodeMode)
 	if *encodeMode == "" && *encodeFile != "" {
 		encodeOption = WithClearFile(*encodeFile)
 	}
 
-	s, err := NewSmuggler(WithInput(input), WithOutput(stdout), WithError(stderr), WithEncodeFlag(!(*decodeMode)), encodeOption)
+	s, err := NewSmuggler(WithInputFromArgs(flag.Args()), WithOutput(stdout), WithError(stderr), WithEncodeFlag(!(*decodeMode)), encodeOption)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return ExecutionError
