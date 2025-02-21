@@ -194,6 +194,7 @@ func Main(stdin, stdout, stderr io.ReadWriter) int {
 		return MissingInputError
 	}
 	if flag.NFlag() > 1 {
+		fmt.Fprintln(stderr, "Error: too many flags provided")
 		flag.Usage()
 		return TooManyInputsError
 	}
@@ -210,13 +211,13 @@ func Main(stdin, stdout, stderr io.ReadWriter) int {
 
 	s, err := NewSmuggler(WithInputFromArgs(flag.Args()), WithOutput(stdout), WithError(stderr), WithEncodeFlag(!(*decodeMode)), encodeOption)
 	if err != nil {
-		fmt.Fprintln(stderr, err)
+		fmt.Fprintln(stderr, "Error:", err)
 		return ExecutionError
 	}
 
 	err = s.Run()
 	if err != nil {
-		fmt.Fprintln(stderr, err)
+		fmt.Fprintln(stderr, "Error:", err)
 		return ExecutionError
 	}
 	return StatusOK
