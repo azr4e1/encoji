@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const Version = "0.1.3"
+const Version = "0.1.4"
 
 const (
 	StatusOK int = iota
@@ -38,7 +38,7 @@ func (s smuggler) EncodeText(target string) (string, error) {
 	if len(s.clearText) == 0 {
 		return "", errors.New("clear text cannot be empty")
 	}
-	encodedText := encode(rune(target[0]), []byte(s.clearText))
+	encodedText := encode([]rune(target)[0], []byte(s.clearText))
 	if len(target) > 1 {
 		encodedText += target[1:]
 	}
@@ -178,7 +178,7 @@ func WithEncodeFlag(f bool) option {
 
 func Main(stdin, stdout, stderr io.ReadWriter) int {
 	flag.Usage = func() {
-		fmt.Fprintf(stderr, "Usage: %s [-encode string | -encodefile filepath | -decode] [stdin]\n", os.Args[0])
+		fmt.Fprintf(stderr, "Usage: %s [flags] [stdin]\n", os.Args[0])
 		fmt.Fprintln(stderr, "Encode/decode text using unicode variation selectors\n")
 		fmt.Fprintln(stderr, "Flags:")
 		flag.PrintDefaults()
